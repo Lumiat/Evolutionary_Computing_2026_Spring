@@ -1,4 +1,4 @@
-function [bestFitnessHistory, finalBest] = genetic_algorithm(objFunc, bounds, popSize, maxGen, pc, pm, eliteRate)
+function [bestFitnessHistory, finalBest] = genetic_algorithm(objFunc, bounds, popSize, maxGen, pc, pm, eliteRate, crossOp, mutOp)
     % Parameters:
     % objFunc: object function handler,
     % bounds: [min, max] of solution
@@ -7,8 +7,10 @@ function [bestFitnessHistory, finalBest] = genetic_algorithm(objFunc, bounds, po
     % pc: crossover percentage
     % pm: mutation percentage
     % eliteRate: elite kept rate
+    % crossOp: crossover function handler 
+    % mutOp: mutation function handler
 
-    dim = 2 % variation dimension (x1, x2)
+    dim = 2; % variation dimension (x1, x2)
     lb = bounds(1);
     ub = bounds(2);
 
@@ -42,28 +44,16 @@ function [bestFitnessHistory, finalBest] = genetic_algorithm(objFunc, bounds, po
             p1 = pop(randi(numElite + 10), :); 
             p2 = pop(randi(numElite + 10), :);
 
-            % crossover: whole arithmetic crossover
-            if rand < pc
-                alpha = rand;
-                offspring1 = alpha * p1 + (1 - alpha) * p2;
-                offspring2 = alpha * p2 + (1 - alpha) * p1;
-            else
-                offspring1 = p1;
-                offspring2 = p2;
-            end
+            % crossover
+            [off1, off2] = crossOp(p1, p2, pc, lb, ub);
             
-            % mutation: gaussian mutation
-            if rand < pm
-                offspring1 = offspring1 + randn(1, dim) * 0.1;
-                offspring2 = offspring2 + randn(1, dim) * 0.1;
-            end
+            % mutation
+            off1 = mutOp(off1, pm, lb, ub);
+            off2 = mutOp(off2, pm, lb, ub);
 
-            offspring1 = max(min(offspring1, ub), lb);
-            offspring2 = max(min(offspring2, ub), lb);
-
-            newPop(i, :) = offspring1;
+            newPop(i, :) = off1;
             if i + 1 <= popSize
-                newPop(i+1, :) = offspring2;
+                newPop(i+1, :) = off2;
             end
         end
         pop = newPop;
