@@ -1,93 +1,140 @@
-# Assignment 1 - Genetic Algorithm on De Jong Functions
+# Assignment1: GA on De Jong Functions
 
-本项目使用 MATLAB 实现了一个基础遗传算法（Genetic Algorithm, GA），用于优化两个经典测试函数：De Jong 1 与 De Jong 2。
+这个工程实现了一个可插拔算子版本的遗传算法（GA），用于优化两个经典测试函数（De Jong 1/2）。
 
-## 项目结构
+如果你是第一次接手代码，建议阅读顺序：
 
-- main.m: 项目入口，负责选择目标函数、设置超参数、执行多次独立实验并绘图。
-- genetic_algorithm.m: 遗传算法主体实现（初始化、选择、交叉、变异、精英保留）。
-- dejong1.m: De Jong 1（Sphere）目标函数。
-- dejong2.m: De Jong 2（Rosenbrock 形式）目标函数。
+1. `main.m`（入口与实验配置）
+2. `genetic_algorithm.m`（主循环）
+3. `arithmetic_crossover.m` / `sbx_crossover.m`（交叉算子）
+4. `gaussian_mutation.m` / `polynomial_mutation.m`（变异算子）
+5. `dejong1.m` / `dejong2.m`（目标函数）
 
-## 目标函数
+## 1. 工程结构速览
+
+- `main.m`
+  作用：选择目标函数 + 选择算法组合 + 执行 30 次独立运行 + 统计与画图。
+
+- `genetic_algorithm.m`
+  作用：GA 主循环。通过函数句柄注入交叉和变异算子（`crossOp`、`mutOp`），不和具体算子耦合。
+
+- `arithmetic_crossover.m`
+  作用：基础算术交叉（whole arithmetic crossover）。
+
+- `sbx_crossover.m`
+  作用：SBX（Simulated Binary Crossover）交叉，含分布指数 `eta_c`。
+
+- `gaussian_mutation.m`
+  作用：高斯变异，扰动幅度固定为 `0.1`。
+
+- `polynomial_mutation.m`
+  作用：多项式变异（NSGA-II 常用形式），含分布指数 `eta_m`。
+
+- `dejong1.m`
+  作用：De Jong 1（Sphere）目标函数。
+
+- `dejong2.m`
+  作用：De Jong 2（Rosenbrock 形式）目标函数。
+
+## 2. 调用关系（谁调用谁）
+
+`main` -> `genetic_algorithm`
+
+`genetic_algorithm` 在每代中调用：
+
+- 目标函数：`dejong1` 或 `dejong2`
+- 交叉算子：`arithmetic_crossover` 或 `sbx_crossover`
+- 变异算子：`gaussian_mutation` 或 `polynomial_mutation`
+
+核心重构点：
+
+- 算法主干（选择/精英保留/迭代）固定在 `genetic_algorithm.m`
+- 算子通过函数句柄从 `main.m` 注入
+- 换算子不需要改 GA 主循环
+
+## 3. 两种算法组合
+
+在 `main(funcID, algoType)` 中：
+
+- `algoType = 1`
+  使用 Basic 组合：Arithmetic Crossover + Gaussian Mutation
+
+- `algoType = 2`
+  使用 Advanced 组合：SBX + Polynomial Mutation
+
+默认：
+
+- `funcID` 默认 1（De Jong 1）
+- `algoType` 默认 2（Advanced）
+
+## 4. 目标函数与取值范围
 
 1. De Jong 1
 
-f(x) = x1^2 + x2^2
+$$f(x)=x_1^2+x_2^2$$
 
-- 定义域: x1, x2 ∈ [-5.12, 5.12]
-- 全局最优点: (0, 0)
-- 最优值: 0
+- 变量范围：$x_1,x_2\in[-5.12,5.12]$
+- 全局最优：$(0,0)$，最优值为 $0$
 
 2. De Jong 2
 
-f(x) = 100 \* (x1^2 - x2)^2 + (1 - x1)^2
+$$f(x)=100(x_1^2-x_2)^2+(1-x_1)^2$$
 
-- 定义域: x1, x2 ∈ [-2.048, 2.048]
-- 全局最优点: (1, 1)
-- 最优值: 0
+- 变量范围：$x_1,x_2\in[-2.048,2.048]$
+- 全局最优：$(1,1)$，最优值为 $0$
 
-## 算法说明
+## 5. 默认实验参数
 
-遗传算法核心流程如下：
+来自 `main.m`：
 
-1. 在给定边界内随机初始化种群。
-2. 计算每个个体的目标函数值（以最小化为目标，值越小越好）。
-3. 按适应度升序排序，记录当代最优值。
-4. 采用精英保留策略直接复制前若干最优个体。
-5. 从较优子集随机选父代进行算术交叉（whole arithmetic crossover）。
-6. 以给定概率进行高斯变异。
-7. 对越界个体进行截断回边界。
-8. 重复迭代直到达到最大代数。
+- `numRuns = 30`
+- `maxGen = 100`
+- `popSize = 50`
+- `pc = 0.8`
+- `pm = 0.1`
+- `eliteRate = 0.1`
+- `eta_c = 10`（SBX 用）
+- `eta_m = 10`（Polynomial mutation 用）
 
-## 默认实验设置
+## 6. 快速运行
 
-在 main.m 中默认参数为：
+在 MATLAB 当前目录切到本工程后：
 
-- 独立运行次数 numRuns = 30
-- 最大代数 maxGen = 100
-- 种群规模 popSize = 50
-- 交叉概率 pc = 0.8
-- 变异概率 pm = 0.1
-- 精英比例 eliteRate = 0.1
+```matlab
+% De Jong 1 + Basic
+main(1, 1)
 
-## 运行方式
+% De Jong 1 + Advanced
+main(1, 2)
 
-在 MATLAB 命令行中进入本目录后执行：
+% De Jong 2 + Basic
+main(2, 1)
 
-- 运行 De Jong 1:
-  main(1)
+% De Jong 2 + Advanced
+main(2, 2)
 
-- 运行 De Jong 2:
-  main(2)
+% 默认：main(1,2)
+main
+```
 
-- 若不传参数，默认运行 De Jong 1:
-  main
+## 7. 运行后会看到什么
 
-## 输出结果
-
-程序会输出：
+控制台输出：
 
 - 30 次独立运行最终最优值的均值（Mean）
 - 30 次独立运行最终最优值的标准差（Std）
 
-并生成两幅图：
+图像输出：
 
-1. 单次运行进化曲线
+1. 单次进化曲线（第 5 次运行）
+2. 第 1/10/50/100 代的箱线图（30 次运行分布）
 
-- 展示某一次运行（代码中为第 5 次）在各代的最优适应度变化。
+## 8. 组内协作建议
 
-2. 分代箱线图
+- 想改算子：优先在对应算子文件修改，不要直接改 `genetic_algorithm.m` 主循环。
+- 想加新算子：新增一个函数并保持参数风格与现有算子一致，然后在 `main.m` 增加分支注入。
+- 想做对比实验：固定 `funcID`，只切换 `algoType`，保持其余参数不变。
 
-- 展示第 1、10、50、100 代在 30 次独立运行中的最优适应度分布。
+---
 
-## 可改进点（可作为报告讨论项）
-
-- 当前代码中 dim 固定为 2，可扩展到任意维度。
-- 父代选择策略较简单（从前 numElite+10 个体随机选），可尝试锦标赛选择或轮盘赌选择。
-- 变异幅度固定为 0.1，可考虑随代数衰减的自适应变异。
-- main.m 中单次曲线标题当前写死为 De Jong 2，可改为随 funcID 动态显示。
-
-## 备注
-
-本实现用于课程作业中的基础实验与可视化分析，强调算法流程清晰与可复现实验结果。
+如果后续要继续扩展（例如多维、更多 benchmark 函数、更多选择策略），当前“主循环 + 算子注入”的结构可以直接复用。
