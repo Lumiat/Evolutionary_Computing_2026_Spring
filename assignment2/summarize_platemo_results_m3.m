@@ -4,7 +4,7 @@
 
 clear; clc;
 
-algorithms = {'NSGAIII','MOEAD','RVEA','SPEA2','SMSEMOA'};
+algorithms = {'NSGAIII','MOEAD','RVEA','SPEA2','NSGAII'};
 problems   = {'DTLZ1','DTLZ2','DTLZ3','DTLZ4','DTLZ7','WFG4'};
 problemD   = [7, 12, 12, 12, 22, 12];
 

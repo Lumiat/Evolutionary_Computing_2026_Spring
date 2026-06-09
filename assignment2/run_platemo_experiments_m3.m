@@ -14,7 +14,7 @@ clear; clc;
 % ---------- Reproducible experiment configuration ----------
 % Teacher-specified algorithms:
 % NSGA-III, MOEA/D, RVEA, SPEA2, SMS-EMOA
-algorithms = {@NSGAIII, @MOEAD, @RVEA, @SPEA2, @SMSEMOA};
+algorithms = {@NSGAIII, @MOEAD, @RVEA, @SPEA2, @NSGAII};
 
 % M = 3 benchmark problems
 problems    = {@DTLZ1, @DTLZ2, @DTLZ3, @DTLZ4, @DTLZ7, @WFG4};
