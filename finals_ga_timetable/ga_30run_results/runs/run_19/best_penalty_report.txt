@@ -1,0 +1,31 @@
+Best total penalty: 532.00
+Hard penalty: 0.00
+Soft penalty: 532.00
+
+Hard-constraint violation counters:
+invalidTime: 0
+roomCapacity: 0
+fixedCampus: 0
+profQualification: 0
+profAvailability: 0
+roomOverlap: 0
+profOverlap: 0
+studentOverlap: 0
+studentShortGap: 0
+profWeeklyLoadOver: 0
+profShortGap: 0
+profCommute: 0
+labBeforeTheory: 0
+courseCampusMismatch: 0
+
+Soft-constraint penalties:
+softTheoryMorning: 360.00
+softLabAfternoon: 0.00
+softNoEvening: 12.00
+softDailyCampusSwitch: 0.00
+softTheoryLabSameProfessor: 160.00
+
+Interpretation:
+- Hard penalty = 0 means no violation of the hard constraints encoded in the solver.
+- Soft penalty reflects unmet preferences, including morning theory, afternoon lab, avoiding same-day cross-campus commuting, and matching theory/lab professors.
+- If hard penalty remains nonzero, increase popSize/maxGen or inspect conflicting constraints.
